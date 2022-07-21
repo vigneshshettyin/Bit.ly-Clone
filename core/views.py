@@ -8,10 +8,17 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsOwner
+
 User = get_user_model()
 
 
 class LoginViewSet(viewsets.ViewSet):
+
+    """
+    A simple ViewSet for authenticating users and returning an auth token.
+
+    """
+
     serializer_class = UserLoginSerializer
 
     def create(self, request):
@@ -25,6 +32,11 @@ class LoginViewSet(viewsets.ViewSet):
 
 
 class RegisterViewSet(viewsets.ViewSet):
+    """
+    A simple ViewSet for creating a new user and generating a token for them.
+
+    """
+
     serializer_class = UserRegisterSerializer
 
     def get_tokens_for_user(self, user):
@@ -43,24 +55,10 @@ class RegisterViewSet(viewsets.ViewSet):
 
 class LinkViewSet(viewsets.ViewSet):
     """
-    A simple ViewSet for listing and creating links.
+    A simple ViewSet for creating short links. User is taken as null, because we don't need to know who created the link.
     """
 
     serializer_class = LinkSerializer
-
-    # def get_permissions(self):
-    #     if self.action == 'list':
-    #         return [IsAuthenticated()]
-    #     if self.action == 'create':
-    #         # check for header with key 'Authorization'
-    #         if 'Authorization' in self.request.headers:
-    #             return [IsAuthenticated()]
-    #     return super().get_permissions()
-
-    # def list(self, request):
-    #     queryset = Link.objects.all()
-    #     serializer = self.serializer_class(queryset, many=True)
-    #     return Response(serializer.data)
 
     def create(self, request):
         if Link.objects.filter(long_url=request.data['long_url']).exists():
@@ -76,6 +74,10 @@ class LinkViewSet(viewsets.ViewSet):
 
 
 class Redirector(View):
+    """
+    A simple View which redirects to the long_url and increments the click count.
+    """
+
     def get(self, request, short_code, *args, **kwargs):
         try:
             link = Link.objects.get(short_code=short_code)
@@ -88,18 +90,17 @@ class Redirector(View):
 
 class CreateViewEditLinkViewSet(viewsets.ViewSet):
     """
-    A simple ViewSet for listing and creating links.
+    A simple ViewSet for listing, creating, retrieving, updating and deleting links for authenticated users.
     """
 
     serializer_class = LinkSerializer
 
-    permission_classes = [IsAuthenticated, IsOwner ]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def get_queryset(self):
         return Link.objects.filter(user=self.request.user)
 
     def create(self, request):
-        # pass request to serializer
         serializer = self.serializer_class(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
@@ -120,7 +121,7 @@ class CreateViewEditLinkViewSet(viewsets.ViewSet):
     def update(self, request, pk=None):
         queryset = self.get_queryset()
         link = get_object_or_404(queryset, pk=pk)
-        serializer = self.serializer_class(link, data=request.data)
+        serializer = self.serializer_class(link, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
