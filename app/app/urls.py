@@ -22,16 +22,16 @@ from drf_yasg import openapi
 
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="BitlyClone API",
-      default_version='v1',
-      description="Create and manage BitlyClone links",
-      terms_of_service="https://vigneshcodes.in",
-      contact=openapi.Contact(email="bitlyclone@vigneshcodes.in"),
-      license=openapi.License(name="BSD License"),
-   ),
-   public=True,
-   permission_classes=[permissions.AllowAny],
+    openapi.Info(
+        title="Bit.ly API",
+        default_version='v1',
+        description="Create and manage BitlyClone links",
+        terms_of_service="https://vigneshcodes.in",
+        contact=openapi.Contact(email="bitlyclone@vigneshcodes.in"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
 )
 
 urlpatterns = [

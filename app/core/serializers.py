@@ -8,7 +8,21 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active', 'last_login')
+        fields = ('username', 'email', 'first_name', 'last_name',
+                  'is_staff', 'is_active', 'last_login')
+
+
+class LinkSerializerWithoutUser(serializers.ModelSerializer):
+    # Add user as anonymous user
+    user = UserSerializer(
+        read_only=True, default=serializers.CreateOnlyDefault(None))
+
+    class Meta:
+        model = Link
+        fields = '__all__'
+        extra_kwargs = {
+            'clicks': {'read_only': True},
+        }
 
 
 class LinkSerializer(serializers.ModelSerializer):

@@ -1,4 +1,4 @@
-from .serializers import LinkSerializer, UserLoginSerializer, UserRegisterSerializer
+from .serializers import LinkSerializer, UserLoginSerializer, UserRegisterSerializer, LinkSerializerWithoutUser
 from .models import Link
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -58,7 +58,7 @@ class LinkViewSet(viewsets.ViewSet):
     A simple ViewSet for creating short links. User is taken as null, because we don't need to know who created the link.
     """
 
-    serializer_class = LinkSerializer
+    serializer_class = LinkSerializerWithoutUser
 
     def create(self, request):
         if Link.objects.filter(long_url=request.data['long_url']).exists():
@@ -71,6 +71,11 @@ class LinkViewSet(viewsets.ViewSet):
                 serializer.save()
                 return Response(serializer.data, status=201)
             return Response(serializer.errors, status=400)
+
+    # def list(self, request):
+    #     links = Link.objects.all()
+    #     serializer = self.serializer_class(links, many=True)
+    #     return Response(serializer.data)
 
 
 class Redirector(View):
@@ -101,7 +106,8 @@ class CreateViewEditLinkViewSet(viewsets.ViewSet):
         return Link.objects.filter(user=self.request.user)
 
     def create(self, request):
-        serializer = self.serializer_class(data=request.data, context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
@@ -121,7 +127,8 @@ class CreateViewEditLinkViewSet(viewsets.ViewSet):
     def update(self, request, pk=None):
         queryset = self.get_queryset()
         link = get_object_or_404(queryset, pk=pk)
-        serializer = self.serializer_class(link, data=request.data, context={'request': request})
+        serializer = self.serializer_class(
+            link, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
